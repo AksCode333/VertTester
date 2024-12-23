@@ -1,0 +1,119 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+// Constants and variables
+const int sensorPin = A0; // Example analog sensor pin
+unsigned long startTime = millis();
+unsigned long stime;
+bool inJump = false;
+bool isOn = false;
+int restingValue = 0;
+
+float jump_1= 0.0;
+float jump_2 = 0.0;
+float jump_3 = 0.0;
+float jump_4 = 0.0;
+float jump_5 = 0.0;
+
+
+void setup() {
+  Serial.begin(9600); // Start serial communication
+  stime = millis();
+  pinMode(sensorPin, INPUT);
+  restingValue = analogRead(sensorPin) + 4;
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+  display.clearDisplay();
+
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 10);
+  // Display static text
+  display.println("VertTester");
+  display.println("ARI AKS");
+  display.display(); 
+
+}
+bool last_foot = false;
+
+
+void loop() {
+  unsigned long spentTime = millis() - stime;
+  unsigned long currentTime = millis();
+  int pressureValue = analogRead(sensorPin);
+  
+  int buttonState = analogRead(sensorPin);
+  if (buttonState > restingValue) {
+    isOn = true;
+    }else {
+    isOn = false;
+    }
+
+  unsigned long elapsedTime = millis();
+  if (inJump == false){
+    if ((isOn == false) && (last_foot == true)) {
+      inJump = true;
+      startTime = millis();
+      } }
+if ((inJump == true) && (isOn == true)){
+  float hang_time = (float(int(elapsedTime) - int(startTime))/1000);
+  // Serial.println(hang_time);
+  // Serial.println((386.1 * ((hang_time) * (hang_time)) / 8), " Inches");
+  jump_1 = (386.1 * ((hang_time) * (hang_time)) / 8), " Inches";
+  if (jump_1 > 9 && jump_1 < 60){
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.setTextSize(3);
+    display.println(jump_1);
+    display.setTextSize(1);
+    display.println(jump_2);
+    display.println(jump_3);
+    display.println(jump_4);
+    display.println(jump_5);
+
+    display.display();
+    Serial.println("update");
+    delay(1000);
+    jump_5 = jump_4;
+    jump_4 = jump_3;
+    jump_3 = jump_2;
+    jump_2 = jump_1;
+
+    isOn = false;
+    inJump = false;
+  }
+    }
+  // Read sensor data
+  last_foot = isOn;
+
+  // Send data to the serial port
+  // Serial.print(bool(isOn));
+  // Serial.print(",");
+  // Serial.print(spentTime);
+  // Serial.print(",");
+  // Serial.println(pressureValue);
+
+  if (buttonState > restingValue) {
+    Serial.print("True, ");
+    Serial.print(spentTime);
+    Serial.print(", ");
+    Serial.println(buttonState);
+    } else {
+    Serial.print("False, ");
+    Serial.print(spentTime);
+    Serial.print(", ");
+    Serial.println(buttonState);
+  }
+
+  // Delay for readability (adjust as necessary)
+  delay(20); // 100ms delay
+}
