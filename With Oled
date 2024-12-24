@@ -27,7 +27,7 @@ void setup() {
   Serial.begin(9600); // Start serial communication
   stime = millis();
   pinMode(sensorPin, INPUT);
-  restingValue = analogRead(sensorPin) + 4;
+  restingValue = analogRead(sensorPin) + 30;
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
     for(;;);
@@ -69,6 +69,8 @@ if ((inJump == true) && (isOn == true)){
   // Serial.println(hang_time);
   // Serial.println((386.1 * ((hang_time) * (hang_time)) / 8), " Inches");
   jump_1 = (386.1 * ((hang_time) * (hang_time)) / 8), " Inches";
+  // Serial.println(jump_1);
+  // delay(1000);
   if (jump_1 > 9 && jump_1 < 60){
     display.clearDisplay();
     display.setCursor(0, 0);
@@ -83,14 +85,15 @@ if ((inJump == true) && (isOn == true)){
     display.display();
     Serial.println("update");
     delay(1000);
+    
     jump_5 = jump_4;
     jump_4 = jump_3;
     jump_3 = jump_2;
     jump_2 = jump_1;
-
+    }
     isOn = false;
     inJump = false;
-  }
+  
     }
   // Read sensor data
   last_foot = isOn;
